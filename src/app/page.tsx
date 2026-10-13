@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Search, Calendar, X, ChevronLeft, ChevronRight, LogOut, Monitor, Users, FolderKanban, Camera } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 interface Screenshot {
   id: string
@@ -90,96 +98,187 @@ export default function Dashboard() {
     }
   }
 
+  const uniqueEmployees = new Set(screenshots.map(s => s.employee_id)).size
+
   return (
-    <div style={{ minHeight: '100vh' }}>
-      <header style={{ background: '#fff', padding: '16px 24px', borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ margin: 0, fontSize: 22 }}>Task Tracking App</h1>
-        <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#f44336', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Logout</button>
+    <div className="min-h-screen bg-muted/40">
+      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Camera className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold tracking-tight">Task Tracking App</h1>
+              <p className="text-xs text-muted-foreground">Screenshot monitoring</p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </div>
       </header>
 
-      <div style={{ padding: 24 }}>
-        <div style={{ background: '#fff', padding: 20, borderRadius: 8, marginBottom: 20, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'end' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Employee</label>
-            <input value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)} placeholder="Name or ID" style={{ padding: '8px 10px', border: '1px solid #ddd', borderRadius: 4, width: 180 }} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Project</label>
-            <input value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} placeholder="Name or ID" style={{ padding: '8px 10px', border: '1px solid #ddd', borderRadius: 4, width: 180 }} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Date From</label>
-            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={{ padding: '8px 10px', border: '1px solid #ddd', borderRadius: 4 }} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Date To</label>
-            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ padding: '8px 10px', border: '1px solid #ddd', borderRadius: 4 }} />
-          </div>
-          <button onClick={handleFilter} style={{ padding: '9px 20px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Filter</button>
-          <button onClick={handleClear} style={{ padding: '9px 20px', background: '#fff', color: '#333', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer' }}>Clear</button>
+      <main className="container px-4 py-6 space-y-6">
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Screenshots</CardTitle>
+              <Monitor className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{pagination.total}</div>
+              <p className="text-xs text-muted-foreground">Across all employees</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Employees</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{uniqueEmployees}</div>
+              <p className="text-xs text-muted-foreground">In current view</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Page</CardTitle>
+              <FolderKanban className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{pagination.page} of {pagination.totalPages || 1}</div>
+              <p className="text-xs text-muted-foreground">20 per page</p>
+            </CardContent>
+          </Card>
         </div>
 
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: 40 }}>Loading...</div>
-        ) : screenshots.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 8 }}>No screenshots found.</div>
-        ) : (
-          <div style={{ background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#f5f5f5', textAlign: 'left' }}>
-                  <th style={{ padding: '12px 16px', fontSize: 13 }}>Screenshot</th>
-                  <th style={{ padding: '12px 16px', fontSize: 13 }}>Employee</th>
-                  <th style={{ padding: '12px 16px', fontSize: 13 }}>Project</th>
-                  <th style={{ padding: '12px 16px', fontSize: 13 }}>Task ID</th>
-                  <th style={{ padding: '12px 16px', fontSize: 13 }}>Captured At</th>
-                </tr>
-              </thead>
-              <tbody>
-                {screenshots.map((s) => (
-                  <tr key={s.id} style={{ borderTop: '1px solid #eee', cursor: 'pointer' }} onClick={() => setSelected(s)}>
-                    <td style={{ padding: '10px 16px' }}>
-                      <img src={s.image_url} alt="screenshot" style={{ width: 120, height: 68, objectFit: 'cover', borderRadius: 4, border: '1px solid #ddd' }} />
-                    </td>
-                    <td style={{ padding: '10px 16px' }}>
-                      <div style={{ fontWeight: 600 }}>{s.employee_name || '-'}</div>
-                      <div style={{ fontSize: 12, color: '#666' }}>{s.employee_id || '-'}</div>
-                    </td>
-                    <td style={{ padding: '10px 16px' }}>
-                      <div style={{ fontWeight: 600 }}>{s.project_name || '-'}</div>
-                      <div style={{ fontSize: 12, color: '#666' }}>{s.project_id || '-'}</div>
-                    </td>
-                    <td style={{ padding: '10px 16px', fontSize: 14 }}>{s.task_id || '-'}</td>
-                    <td style={{ padding: '10px 16px', fontSize: 14 }}>{formatDate(s.captured_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee' }}>
-              <span style={{ fontSize: 13, color: '#666' }}>Page {pagination.page} of {pagination.totalPages} (Total: {pagination.total})</span>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button disabled={pagination.page <= 1} onClick={() => fetchScreenshots(pagination.page - 1)} style={{ padding: '8px 16px', background: pagination.page <= 1 ? '#eee' : '#1976d2', color: pagination.page <= 1 ? '#999' : '#fff', border: 'none', borderRadius: 4, cursor: pagination.page <= 1 ? 'not-allowed' : 'pointer' }}>Previous</button>
-                <button disabled={pagination.page >= pagination.totalPages} onClick={() => fetchScreenshots(pagination.page + 1)} style={{ padding: '8px 16px', background: pagination.page >= pagination.totalPages ? '#eee' : '#1976d2', color: pagination.page >= pagination.totalPages ? '#999' : '#fff', border: 'none', borderRadius: 4, cursor: pagination.page >= pagination.totalPages ? 'not-allowed' : 'pointer' }}>Next</button>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap items-end gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="employee">Employee</Label>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input id="employee" value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)} placeholder="Name or ID" className="pl-8 w-[200px]" />
+                </div>
               </div>
+              <div className="grid gap-2">
+                <Label htmlFor="project">Project</Label>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input id="project" value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} placeholder="Name or ID" className="pl-8 w-[200px]" />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="dateFrom">Date From</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input id="dateFrom" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="pl-8" />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="dateTo">Date To</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input id="dateTo" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="pl-8" />
+                </div>
+              </div>
+              <Button onClick={handleFilter}>
+                <Search className="h-4 w-4" />
+                Filter
+              </Button>
+              <Button variant="outline" onClick={handleClear}>
+                <X className="h-4 w-4" />
+                Clear
+              </Button>
             </div>
-          </div>
-        )}
-      </div>
+          </CardContent>
+        </Card>
 
-      {selected && (
-        <div onClick={() => setSelected(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: 20 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: 8, maxWidth: '90vw', maxHeight: '90vh', overflow: 'auto', padding: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <div>
-                <div style={{ fontWeight: 600 }}>{selected.employee_name} ({selected.employee_id})</div>
-                <div style={{ fontSize: 13, color: '#666' }}>{selected.project_name} ({selected.project_id}) | Task: {selected.task_id} | {formatDate(selected.captured_at)}</div>
+        <Card>
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="flex h-32 items-center justify-center text-muted-foreground">Loading screenshots...</div>
+            ) : screenshots.length === 0 ? (
+              <div className="flex h-32 flex-col items-center justify-center gap-2 text-muted-foreground">
+                <Camera className="h-8 w-8" />
+                <p>No screenshots found.</p>
               </div>
-              <button onClick={() => setSelected(null)} style={{ padding: '6px 12px', background: '#f44336', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Close</button>
-            </div>
-            <img src={selected.image_url} alt="full screenshot" style={{ maxWidth: '100%', height: 'auto', borderRadius: 4 }} />
-          </div>
-        </div>
-      )}
+            ) : (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Screenshot</TableHead>
+                      <TableHead>Employee</TableHead>
+                      <TableHead>Project</TableHead>
+                      <TableHead>Task ID</TableHead>
+                      <TableHead>Captured At</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {screenshots.map((s) => (
+                      <TableRow key={s.id} className="cursor-pointer" onClick={() => setSelected(s)}>
+                        <TableCell>
+                          <img src={s.image_url} alt="screenshot" className="h-[68px] w-[120px] rounded-md border object-cover" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{s.employee_name || '-'}</div>
+                          <div className="text-xs text-muted-foreground">{s.employee_id || '-'}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{s.project_name || '-'}</div>
+                          <div className="text-xs text-muted-foreground">{s.project_id || '-'}</div>
+                        </TableCell>
+                        <TableCell>
+                          {s.task_id ? <Badge variant="secondary">{s.task_id}</Badge> : <span className="text-muted-foreground">-</span>}
+                        </TableCell>
+                        <TableCell className="text-sm">{formatDate(s.captured_at)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <div className="flex items-center justify-between border-t px-4 py-3">
+                  <p className="text-sm text-muted-foreground">
+                    Page {pagination.page} of {pagination.totalPages} (Total: {pagination.total})
+                  </p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" disabled={pagination.page <= 1} onClick={() => fetchScreenshots(pagination.page - 1)}>
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <Button variant="outline" size="sm" disabled={pagination.page >= pagination.totalPages} onClick={() => fetchScreenshots(pagination.page + 1)}>
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </main>
+
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>
+              {selected?.employee_name} ({selected?.employee_id})
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              {selected?.project_name} ({selected?.project_id}) | Task: {selected?.task_id || '-'} | {selected && formatDate(selected.captured_at)}
+            </p>
+          </DialogHeader>
+          {selected && (
+            <img src={selected.image_url} alt="full screenshot" className="max-h-[70vh] w-full rounded-lg border object-contain" />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
