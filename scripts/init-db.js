@@ -27,11 +27,15 @@ async function main() {
         project_name VARCHAR(255),
         task_id VARCHAR(100),
         captured_at TIMESTAMP NOT NULL,
-        image_url VARCHAR(500) NOT NULL,
+        image_url TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT NOW()
       )
     `)
     console.log('screenshots table ready')
+
+    // Migrate existing image_url from VARCHAR(500) to TEXT for base64 data URLs
+    await pool.query(`ALTER TABLE screenshots ALTER COLUMN image_url TYPE TEXT`)
+    console.log('image_url migrated to TEXT')
 
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_screenshots_employee ON screenshots(employee_id)`)
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_screenshots_project ON screenshots(project_id)`)

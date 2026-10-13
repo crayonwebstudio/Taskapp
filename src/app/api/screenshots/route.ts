@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
 import { randomUUID } from 'crypto'
 import { query } from '@/lib/db'
 import { verifyToken, getTokenFromRequest } from '@/lib/auth'
@@ -14,14 +12,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields: employee_id, captured_at, image_base64' }, { status: 400 })
     }
 
-    const base64Data = image_base64.replace(/^data:image\/\w+;base64,/, '')
-    const buffer = Buffer.from(base64Data, 'base64')
-    const filename = `${randomUUID()}.png`
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads')
-    await mkdir(uploadDir, { recursive: true })
-    const filepath = path.join(uploadDir, filename)
-    await writeFile(filepath, buffer)
-    const image_url = `/uploads/${filename}`
+    // Store as data URL in database (reliable, no filesystem dependency)
+    // image_base64 may already be a data URL or raw base64
+    let image_url: string
+    if (image_base64.startsWith('data:')) {
+      image_url = image_base64
+    } else {
+      image_url = `data:image/png;base64,${image_base64}`
+    }
 
     const id = randomUUID()
     const result = await query(
