@@ -4,7 +4,8 @@ const globalForPg = globalThis as unknown as { pgPool: Pool | undefined }
 
 export const pool = globalForPg.pgPool || new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
+  // Coolify internal Postgres does not support SSL, disable it
+  ssl: false,
 })
 
 if (process.env.NODE_ENV !== 'production') {
