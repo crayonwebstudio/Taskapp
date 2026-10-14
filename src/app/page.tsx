@@ -92,7 +92,24 @@ export default function Dashboard() {
 
   const formatDate = (iso: string) => {
     try {
-      return new Date(iso).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+      // EXE sends IST time (e.g. "2026-10-14 13:59:00"). Display as-is, no conversion.
+      // Input may be "2026-10-14 13:59:00" or ISO "2026-10-14T13:59:00.000Z"
+      let datePart: string, timePart: string
+      if (iso.includes('T')) {
+        const [d, t] = iso.split('T')
+        datePart = d
+        timePart = t.split('.')[0].split('Z')[0].split('+')[0]
+      } else {
+        const parts = iso.split(' ')
+        datePart = parts[0]
+        timePart = parts[1] || '00:00:00'
+      }
+      const [year, month, day] = datePart.split('-')
+      const [hourStr, minute, second] = timePart.split(':')
+      let h = parseInt(hourStr, 10)
+      const ampm = h >= 12 ? 'PM' : 'AM'
+      h = h % 12 || 12
+      return `${day}/${month}/${year}, ${h}:${minute}:${second} ${ampm}`
     } catch {
       return iso
     }
