@@ -82,6 +82,17 @@ async function main() {
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_inactive_work_logs_created ON inactive_work_logs(created_at DESC)`)
     console.log('inactive_work_logs table ready')
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app_settings (
+        key VARCHAR(100) PRIMARY KEY,
+        value VARCHAR(255) NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `)
+    await pool.query(`INSERT INTO app_settings (key, value) VALUES ('interval_min_minutes', '5') ON CONFLICT (key) DO NOTHING`)
+    await pool.query(`INSERT INTO app_settings (key, value) VALUES ('interval_max_minutes', '15') ON CONFLICT (key) DO NOTHING`)
+    console.log('app_settings table ready')
+
     const adminEmail = process.env.ADMIN_EMAIL || 'milan.crayon@gmail.com'
     const adminPassword = process.env.ADMIN_PASSWORD
 
