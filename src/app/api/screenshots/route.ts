@@ -35,6 +35,31 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function DELETE(req: NextRequest) {
+  try {
+    const token = getTokenFromRequest(req)
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (!verifyToken(token)) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id') || ''
+    if (!id) {
+      return NextResponse.json({ error: 'Missing required field: id' }, { status: 400 })
+    }
+    const result = await query(`DELETE FROM screenshots WHERE id = $1`, [id])
+    if ((result.rowCount || 0) === 0) {
+      return NextResponse.json({ error: 'Screenshot not found' }, { status: 404 })
+    }
+    return NextResponse.json({ message: 'Screenshot deleted' })
+  } catch (err) {
+    console.error('Screenshot delete error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const token = getTokenFromRequest(req)
