@@ -134,6 +134,17 @@ export default function InactiveLogPage() {
       </header>
 
       <main className="container px-4 py-6 space-y-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="default" size="sm" onClick={() => router.push('/inactive-log')}>
+            <Clock className="h-4 w-4" />
+            Inactive Log
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => router.push('/inactive-work-log')}>
+            <Clock className="h-4 w-4" />
+            Inactive Work Log
+          </Button>
+          <p className="text-xs text-muted-foreground">Inactive Log: no screenshot upload. Inactive Work Log: punched in, no real work.</p>
+        </div>
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
