@@ -42,6 +42,31 @@ async function main() {
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_screenshots_captured ON screenshots(captured_at DESC)`)
     console.log('indexes ready')
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS inactivity_alerts (
+        employee_id VARCHAR(100) PRIMARY KEY,
+        employee_name VARCHAR(255),
+        last_seen TIMESTAMP,
+        alerted_at TIMESTAMP DEFAULT NOW()
+      )
+    `)
+    console.log('inactivity_alerts table ready')
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS inactive_logs (
+        id UUID PRIMARY KEY,
+        employee_id VARCHAR(100) NOT NULL,
+        employee_name VARCHAR(255),
+        last_seen TIMESTAMP,
+        minutes_idle INT NOT NULL,
+        reason VARCHAR(255),
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `)
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_inactive_logs_employee ON inactive_logs(employee_id)`)
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_inactive_logs_created ON inactive_logs(created_at DESC)`)
+    console.log('inactive_logs table ready')
+
     const adminEmail = process.env.ADMIN_EMAIL || 'milan.crayon@gmail.com'
     const adminPassword = process.env.ADMIN_PASSWORD
 
