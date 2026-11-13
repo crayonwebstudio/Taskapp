@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Calendar, X, ChevronLeft, ChevronRight, LogOut, Monitor, Users, FolderKanban, Camera, Clock, Settings as SettingsIcon } from 'lucide-react'
+import { Search, Calendar, X, ChevronLeft, ChevronRight, LogOut, Monitor, Users, FolderKanban, Camera, Clock, Settings as SettingsIcon, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -134,6 +134,10 @@ export default function Dashboard() {
             <Button variant="outline" size="sm" onClick={() => router.push('/inactive-log')}>
               <Clock className="h-4 w-4" />
               Inactive Log
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => router.push('/cleanup')}>
+              <Trash2 className="h-4 w-4" />
+              Cleanup
             </Button>
             <Button variant="outline" size="sm" onClick={() => router.push('/settings')}>
               <SettingsIcon className="h-4 w-4" />
