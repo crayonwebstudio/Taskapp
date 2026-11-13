@@ -98,7 +98,9 @@ export async function GET(req: NextRequest) {
       )
       if (recent.rows.length > 0) continue
       if (!webhook) continue
-      const msg = `Employee: ${row.employee_name} (${row.employee_id})\nLast activity: ${row.last_seen}\nIdle: ${minutesIdle} minutes\nNo screenshot received for over 20 minutes.`
+      const displayName = row.employee_name && row.employee_name !== row.employee_id ? `${row.employee_name} (${row.employee_id})` : row.employee_id
+      const lastSeenIst = new Date(new Date(row.last_seen).getTime() + 5.5 * 60 * 60 * 1000).toISOString().replace('T', ' ').substring(0, 19) + ' IST'
+      const msg = `Employee: ${displayName}\nLast activity: ${lastSeenIst}\nIdle: ${minutesIdle} minutes\nNo activity for over 20 minutes.`
       try {
         const r = await fetch(webhook, {
           method: 'POST',
